@@ -1,0 +1,11 @@
+# Copy examples/rules.example.yaml to ./config.yaml, set statePath: /data/state.json, and create .env (see .env.example).
+services:
+  monitor:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - monitor-state:/data
+volumes:
+  monitor-state:

@@ -1,0 +1,18 @@
+{
+  "name": "onchain-event-alerts",
+  "version": "0.1.0",
+  "description": "Personal demo: EVM event monitoring & alerting service (polling getLogs, reorg-safe cursor, rule engine, notification sinks).",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/index.js run --config config.yaml",
+    "validate": "tsx src/index.ts validate --config examples/rules.example.yaml",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "dependencies": { "viem": "^2.21.0", "yaml": "^2.5.0", "zod": "^3.23.8" },
+  "devDependencies": { "@types/node": "^24.0.0", "tsx": "^4.19.0", "typescript": "^5.6.0", "vitest": "^2.1.0" }
+}

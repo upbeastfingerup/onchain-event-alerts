@@ -1,0 +1,69 @@
+# Example config. Secrets are NEVER stored here: sinks reference environment variable names.
+# Addresses below are placeholders (well-known mainnet addresses used as examples only).
+chain:
+  name: ethereum
+  rpcUrlEnv: RPC_URL        # export RPC_URL=https://your-node
+  confirmations: 12         # only process blocks 12 deep -> shallow reorgs never alert
+  pollIntervalMs: 12000
+  maxBlockRange: 1000
+  reorgWindow: 128
+  # startBlock: 20000000    # omit to start at the current safe head
+statePath: ./state.json
+
+delivery:                   # applies to every sink
+  maxRetries: 4
+  baseDelayMs: 500
+  maxDelayMs: 30000
+  minIntervalMs: 1000       # at most ~1 message/second per sink
+
+sinks:
+  - { name: ops-telegram, type: telegram, botTokenEnv: TELEGRAM_BOT_TOKEN, chatId: "-1000000000000" }
+  - { name: ops-discord, type: discord, webhookUrlEnv: DISCORD_WEBHOOK_URL }
+  - { name: pager, type: webhook, urlEnv: ALERT_WEBHOOK_URL, secretEnv: ALERT_WEBHOOK_SECRET }
+
+rules:
+  - id: usdc-whales
+    type: erc20_transfer
+    addresses: ["0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"]   # USDC
+    minAmount: 1000000
+    decimals: 6
+    symbol: USDC
+    cooldownSeconds: 30
+    cooldownScope: contract
+    sinks: [ops-discord]
+
+  - id: weth-usdc-price
+    type: v2_price_move
+    addresses: ["0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc"]   # Uniswap V2 USDC/WETH pair
+    pair: USDC/WETH
+    thresholdPercent: 3
+    decimals0: 6
+    decimals1: 18
+    cooldownSeconds: 300
+    severity: warning
+
+  - id: weth-usdc-big-swap
+    type: v2_large_swap
+    addresses: ["0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc"]
+    pair: USDC/WETH
+    token: 0
+    decimals: 6
+    minAmount: 500000
+
+  - id: treasury-ownership
+    type: ownership_transferred
+    addresses: ["0x1111111111111111111111111111111111111111"]   # placeholder
+    severity: critical
+
+  - id: protocol-pause
+    type: paused_state
+    addresses: ["0x2222222222222222222222222222222222222222"]   # placeholder
+    severity: critical
+
+  - id: aave-liquidations
+    type: aave_liquidation
+    addresses: ["0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"]   # Aave V3 Pool (Ethereum)
+    minDebtToCover: 50000
+    debtDecimals: 6
+    debtSymbol: USDC
+    cooldownSeconds: 60
